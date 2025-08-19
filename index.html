@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JavaScript Form Validation Project</title>
+
+  <!-- Bootstrap 5 (allowed per requirements) -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* Minimal custom styling to keep things readable */
+    body { background: black
+    ; color:#e6e6e6; }
+    .card { background:white; border:1px solid #1f2330; }
+    .form-text, .invalid-feedback { color:#f1a7a7 !important; }
+    .valid-feedback { color:#8fe388 !important; }
+    .brand { letter-spacing:.5px; }
+    .req { color:#e7c000; }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+        <div class="card shadow-lg rounded-4">
+          <div class="card-body p-4 p-md-5">
+            <h1 class="h3 mb-3 brand">JavaScript Form Validation </h1>
+            <p class="text-secondary mb-4">
+              (Fill the form. Errors will show live while typing; submitting with any error will pop an alert that explains what to fix.)
+            </p>
+
+            <!-- FORM -->
+            <form id="signupForm" novalidate>
+              <!-- Full Name -->
+              <div class="mb-3">
+                <label for="fullName" class="form-label">Full Name *</label>
+                <input type="text" class="form-control" id="fullName" placeholder="e.g., Priya S." required />
+                <div class="valid-feedback">Looks good.</div>
+                <div class="invalid-feedback" id="fullNameErr">Name must be at least 5 characters.</div>
+              </div>
+
+              <!-- Email -->
+              <div class="mb-3">
+                <label for="email" class="form-label">Email ID *</label>
+                <input type="email" class="form-control" id="email" placeholder="name@example.com" required />
+                <div class="valid-feedback">Looks good.</div>
+                <div class="invalid-feedback" id="emailErr">Enter a valid email that contains @.</div>
+              </div>
+
+              <!-- Phone -->
+              <div class="mb-3">
+                <label for="phone" class="form-label">Phone Number *</label>
+                <input type="tel" class="form-control" id="phone" placeholder="10-digit number" maxlength="10" inputmode="numeric" required />
+                <div class="form-text">Must be exactly 10 digits and not the sequence 1234567890.</div>
+                <div class="valid-feedback">Looks good.</div>
+                <div class="invalid-feedback" id="phoneErr">Phone must be 10 digits and not 1234567890.</div>
+              </div>
+
+              <!-- Password -->
+              <div class="mb-3">
+                <label for="password" class="form-label">Password *</label>
+                <input type="password" class="form-control" id="password" placeholder="Min 8 characters" required />
+                <div class="form-text">
+                  Cannot be “password”, cannot be your name, and must have at least 8 characters.
+                </div>
+                <div class="valid-feedback">Strong enough.</div>
+                <div class="invalid-feedback" id="passwordErr">
+                  Password is not strong enough or violates the rules.
+                </div>
+              </div>
+
+              <!-- Confirm Password -->
+              <div class="mb-4">
+                <label for="confirmPassword" class="form-label">Confirm Password *</label>
+                <input type="password" class="form-control" id="confirmPassword" placeholder="Re-type your password" required />
+                <div class="valid-feedback">Passwords match.</div>
+                <div class="invalid-feedback" id="confirmErr">Passwords do not match.</div>
+              </div>
+
+              <div class="d-grid">
+                <button class="btn btn-warning btn-lg fw-semibold" type="submit">Submit Form</b
+                  utton>
+              </div>
+            </form>
+
+            <!-- /FORM -->
+
+          </div>
+        </div>
+
+        <p class="mt-3 small text-secondary">
+          Tech used: HTML, CSS, Bootstrap, and vanilla JavaScript (event listeners, multiple functions, loops, if/else, no external libraries).
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS (for better UX focus/feedback; not required for validation itself) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // ====== Utility helpers (show/clear field errors) =========================
+    function setValid(inputEl, isValid, messageEl, message) {
+      // Toggle Bootstrap's validation classes
+      if (isValid) {
+        inputEl.classList.add('is-valid');
+        inputEl.classList.remove('is-invalid');
+        if (messageEl) messageEl.textContent = '';
+      } else {
+        inputEl.classList.add('is-invalid');
+        inputEl.classList.remove('is-valid');
+        if (messageEl && message) messageEl.textContent = message;
+      }
+      return isValid;
+    }
+
+    // ====== Individual validators (return true/false) =========================
+    function validateName() {
+      const nameInput = document.getElementById('fullName');
+      const err = document.getElementById('fullNameErr');
+      const name = nameInput.value.trim();
+      // Rule: name must be >= 5 characters
+      const ok = name.length >= 5;
+      return setValid(nameInput, ok, err, 'Name must be at least 5 characters.');
+    }
+
+    function validateEmail() {
+      const emailInput = document.getElementById('email');
+      const err = document.getElementById('emailErr');
+      const email = emailInput.value.trim();
+      // Rule: must contain '@' (simple check as per requirement)
+      const ok = email.includes('@') && email.indexOf('@') > 0 && email.indexOf('@') < email.length - 1;
+      return setValid(emailInput, ok, err, 'Enter a valid email that contains @.');
+    }
+
+    function validatePhone() {
+      const phoneInput = document.getElementById('phone');
+      const err = document.getElementById('phoneErr');
+      const digits = phoneInput.value.trim();
+      // Rule: exactly 10 digits, not the sequence 1234567890
+      const tenDigits = /^[0-9]{10}$/.test(digits);
+      const notBoringSeq = digits !== '1234567890';
+      const ok = tenDigits && notBoringSeq;
+      return setValid(phoneInput, ok, err, 'Phone must be 10 digits and not 1234567890.');
+    }
+
+    function normalizeNameForPasswordCheck(name) {
+      // lower-case and remove spaces for a fair comparison
+      return name.toLowerCase().replace(/\s+/g, '');
+    }
+
+    function validatePassword() {
+      const passInput = document.getElementById('password');
+      const nameInput = document.getElementById('fullName');
+      const err = document.getElementById('passwordErr');
+
+      const pwd = passInput.value;
+      const nameNorm = normalizeNameForPasswordCheck(nameInput.value);
+
+      // Rules from the prompt:
+      // 1) length >= 8
+      // 2) not "password" (case-insensitive)
+      // 3) not equal to user's name
+      const longEnough = pwd.length >= 8;
+      const notPasswordWord = pwd.toLowerCase() !== 'password';
+      const notUserName = pwd.toLowerCase().replace(/\s+/g, '') !== nameNorm;
+
+      const ok = longEnough && notPasswordWord && notUserName;
+
+      // Optional nice-to-have: basic strength hint (letters + digits) – not required but harmless
+      if (!ok) {
+        let msg = [];
+        if (!longEnough) msg.push('at least 8 characters');
+        if (!notPasswordWord) msg.push('cannot be "password"');
+        if (!notUserName) msg.push('cannot be your name');
+        setValid(passInput, false, err, 'Password invalid: ' + msg.join(', ') + '.');
+        return false;
+      }
+      return setValid(passInput, true, err, '');
+    }
+
+    function validateConfirm() {
+      const passInput = document.getElementById('password');
+      const confirmInput = document.getElementById('confirmPassword');
+      const err = document.getElementById('confirmErr');
+      const ok = confirmInput.value === passInput.value && passInput.value.length > 0;
+      return setValid(confirmInput, ok, err, 'Passwords do not match.');
+    }
+
+    // ====== Live validation (onChange / onInput listeners) ====================
+    document.getElementById('fullName').addEventListener('input', validateName);
+    document.getElementById('email').addEventListener('input', validateEmail);
+    document.getElementById('phone').addEventListener('input', validatePhone);
+    document.getElementById('password').addEventListener('input', () => {
+      validatePassword();
+      validateConfirm(); // keep confirm up to date
+    });
+    document.getElementById('confirmPassword').addEventListener('input', validateConfirm);
+
+    // ====== Submit handler with loop over validators and popup alerts =========
+    document.getElementById('signupForm').addEventListener('submit', function (e) {
+      e.preventDefault(); // we’ll only allow submission if all validations pass
+
+      // Run all validators and collect any error messages
+      const checks = [
+        { fn: validateName,   label: 'Full Name' },
+        { fn: validateEmail,  label: 'Email' },
+        { fn: validatePhone,  label: 'Phone Number' },
+        { fn: validatePassword, label: 'Password' },
+        { fn: validateConfirm,  label: 'Confirm Password' }
+      ];
+
+      const failed = [];
+      for (const c of checks) {
+        const ok = c.fn();
+        if (!ok) failed.push(c.label);
+      }
+
+      if (failed.length > 0) {
+        // Requirement: "error should pop saying …"
+        alert(
+          'Please fix the following fields before submitting:\n- ' +
+          failed.join('\n- ')
+        );
+        return;
+      }
+
+      // Everything is valid – simulate success
+      alert('✅ Success!,Form validation complete.');
+
+      // If you want to actually submit somewhere, replace the alert above and:
+      // this.submit();
+    });
+  </script>
+</body>
+</html>
